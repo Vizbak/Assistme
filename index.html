@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Framehouse — Film OS</title>
+<style>
+:root{--bg:#f4f1ea;--ink:#111;--muted:#777;--line:#d7d2c8;--card:#fffdf8}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Inter,Arial,sans-serif}button,input,select,textarea{font:inherit}
+body{padding:28px}.app{max-width:1400px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:18px}.brand{font-family:Georgia,serif;font-size:34px}.nav{display:flex;gap:10px}.nav button{background:none;border:0;padding:10px 12px;cursor:pointer}.nav button.active{border-bottom:1px solid #111}
+main{padding:44px 0}.hero{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:28px}.hero h1{font:400 clamp(48px,7vw,96px)/.86 Georgia,serif;margin:0}.hero p{max-width:520px;color:var(--muted);line-height:1.5}
+.actions{display:flex;gap:10px}.btn{border:1px solid #111;background:#111;color:#fff;padding:12px 16px;cursor:pointer}.btn.secondary{background:transparent;color:#111}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:var(--card);border:1px solid var(--line);padding:18px}.card h3{font:400 34px/.9 Georgia,serif;margin:10px 0}.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:18px}.bar{height:6px;background:#e6e0d5}.bar i{display:block;height:100%;background:#111}.empty{padding:70px 20px;text-align:center;border:1px dashed #c8c0b4}.empty h2{font:400 44px/.95 Georgia,serif;margin:0 0 12px}
+.panel{display:none}.panel.active{display:block}.list{display:grid;gap:10px}.task{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);background:var(--card)}.task.done span{text-decoration:line-through;color:#999}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.modalbox{background:var(--card);max-width:560px;width:100%;padding:24px}.modalbox h2{font:400 38px Georgia,serif;margin:0 0 18px}.fields{display:grid;gap:12px}.fields input,.fields select,.fields textarea{width:100%;padding:12px;border:1px solid var(--line);background:#fff}.close{float:right;background:none;border:0;cursor:pointer}.small{font-size:12px;color:var(--muted)}
+.detail{margin-top:20px;padding:24px;border-top:1px solid var(--line);background:var(--card)}.detailTop{display:flex;justify-content:space-between;align-items:start;gap:20px}.detailTop h2{font:400 54px/.9 Georgia,serif;margin:0}.detailActions{display:flex;gap:8px}.pill{display:inline-block;border:1px solid #bbb;padding:5px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+@media(max-width:900px){.grid{grid-template-columns:1fr 1fr}.hero{flex-direction:column;align-items:start}}@media(max-width:650px){body{padding:16px}.grid{grid-template-columns:1fr}.nav{display:none}.top{align-items:start}.hero h1{font-size:56px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="brand">Framehouse</div><div class="nav"><button data-tab="dashboard" class="active">Dashboard</button><button data-tab="projects">Projects</button><button data-tab="tasks">Tasks</button><button data-tab="schedule">Schedule</button><button data-tab="people">People</button></div><div class="small" id="userState">Local workspace</div></header>
+<main>
+<section id="dashboard" class="panel active">
+<div class="hero"><div><div class="small">FILM OS / WORKSPACE</div><h1>Your films.<br>Your production.</h1></div><div><p>Keep every film project, task, deadline and production detail in one focused workspace. Start with a blank slate and build your slate as you go.</p><div class="actions"><button class="btn" onclick="openProjectModal()">+ New Project</button><button class="btn secondary" onclick="showTab('tasks')">View Tasks</button></div></div></div>
+<div id="projectGrid" class="grid"></div>
+</section>
+<section id="projects" class="panel"><div class="hero"><div><div class="small">PROJECTS</div><h1>All projects</h1></div><button class="btn" onclick="openProjectModal()">+ New Project</button></div><div id="projectList" class="grid"></div></section>
+<section id="tasks" class="panel"><div class="hero"><div><div class="small">TASKS</div><h1>Production tasks</h1></div><button class="btn" onclick="openTaskModal()">+ Add Task</button></div><div id="taskList" class="list"></div></section>
+<section id="schedule" class="panel"><div class="hero"><div><div class="small">SCHEDULE</div><h1>Upcoming</h1></div></div><div id="scheduleList" class="list"></div></section>
+<section id="people" class="panel"><div class="hero"><div><div class="small">PEOPLE</div><h1>Crew & collaborators</h1></div></div><div class="empty"><h2>Add people as your slate grows.</h2><p class="small">Crew management is ready for the next layer of your production workspace.</p></div></section>
+<div id="detail" class="detail" style="display:none"></div>
+</main>
+</div>
+
+<div id="projectModal" class="modal"><div class="modalbox"><button class="close" onclick="closeModal('projectModal')">✕</button><h2>New project</h2><div class="fields"><input id="pName" placeholder="Project title"><input id="pType" placeholder="Format (Feature / Short / Series)"><input id="pDate" type="date"><select id="pStatus"><option>Development</option><option>Pre-production</option><option>Production</option><option>Post</option><option>Complete</option></select><textarea id="pDesc" rows="4" placeholder="Logline / notes"></textarea><button class="btn" onclick="saveProject()">Create project</button></div></div></div>
+<div id="taskModal" class="modal"><div class="modalbox"><button class="close" onclick="closeModal('taskModal')">✕</button><h2>Add task</h2><div class="fields"><input id="tName" placeholder="Task name"><select id="tProject"></select><input id="tDate" type="date"><button class="btn" onclick="saveTask()">Add task</button></div></div></div>
+
+<script>
+const KEY='framehouse-projects-v1';
+let projects=JSON.parse(localStorage.getItem(KEY)||'[]');
+let selected=null;
+function persist(){localStorage.setItem(KEY,JSON.stringify(projects));render();}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function showTab(id){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===id)); if(id!=='dashboard')document.getElementById('detail').style.display='none'; render();}
+function openProjectModal(){document.getElementById('projectModal').classList.add('open');}
+function openTaskModal(){const sel=document.getElementById('tProject');sel.innerHTML=projects.length?projects.map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join(''):'<option value="">No projects yet</option>';document.getElementById('taskModal').classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function saveProject(){const name=document.getElementById('pName').value.trim(); if(!name)return; projects.push({id:crypto.randomUUID(),name,type:document.getElementById('pType').value||'Film',date:document.getElementById('pDate').value,status:document.getElementById('pStatus').value,desc:document.getElementById('pDesc').value,tasks:[]});persist();closeModal('projectModal');['pName','pType','pDate','pDesc'].forEach(id=>document.getElementById(id).value='');showTab('projects');}
+function saveTask(){const name=document.getElementById('tName').value.trim();const pid=document.getElementById('tProject').value;if(!name||!pid)return;const p=projects.find(x=>x.id===pid);p.tasks=p.tasks||[];p.tasks.push({id:crypto.randomUUID(),name,date:document.getElementById('tDate').value,done:false});persist();closeModal('taskModal');document.getElementById('tName').value='';document.getElementById('tDate').value='';showTab('tasks');}
+function openProject(id){selected=id;const p=projects.find(x=>x.id===id);if(!p)return;const d=document.getElementById('detail');d.style.display='block';d.innerHTML='<div class="detailTop"><div><span class="pill">'+esc(p.status)+'</span><h2>'+esc(p.name)+'</h2><p class="small">'+esc(p.type)+' · '+(p.date||'No deadline')+'</p></div><div class="detailActions"><button class="btn secondary" onclick="openTaskModal()">+ Add Task</button><button class="btn secondary" onclick="closeDetail()">Close</button></div></div><p>'+esc(p.desc||'No description yet.')+'</p><hr><h3>Tasks</h3><div class="list">'+(p.tasks?.length?p.tasks.map(t=>'<div class="task '+(t.done?'done':'')+'"><input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleTask(\''+p.id+'\',\''+t.id+'\')"><span>'+esc(t.name)+'</span><small class="small">'+(t.date||'')+'</small></div>').join(''):'<div class="empty"><p class="small">No tasks yet. Use + Add Task to create the first one.</p></div>')+'</div>';d.scrollIntoView({behavior:'smooth',block:'start'});}
+function closeDetail(){document.getElementById('detail').style.display='none';selected=null;}
+function toggleTask(pid,tid){const p=projects.find(x=>x.id===pid),t=p?.tasks.find(x=>x.id===tid);if(t){t.done=!t.done;persist();if(selected===pid)openProject(pid);}}
+function render(){const cards=projects.map(p=>'<div class="card"><div class="meta"><span>'+esc(p.status)+'</span><span>'+esc(p.type)+'</span></div><h3>'+esc(p.name)+'</h3><p class="small">'+esc(p.desc||'No description yet.')+'</p><div class="meta"><span>'+(p.tasks?.filter(t=>t.done).length||0)+' completed</span><span>'+(p.date||'No date')+'</span></div><div class="actions"><button class="btn secondary" onclick="openProject(\''+p.id+'\')">Open Project ↗</button></div></div>').join('');
+document.getElementById('projectGrid').innerHTML=cards||'<div class="empty" style="grid-column:1/-1"><h2>Start your slate.</h2><p class="small">No projects yet. Create your first film project to get started.</p><button class="btn" onclick="openProjectModal()">+ New Project</button></div>';
+document.getElementById('projectList').innerHTML=cards||document.getElementById('projectGrid').innerHTML;
+const all=[];projects.forEach(p=>(p.tasks||[]).forEach(t=>all.push({...t,pid:p.id,pname:p.name})));
+document.getElementById('taskList').innerHTML=all.length?all.map(t=>'<div class="task '+(t.done?'done':'')+'"><input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleTask(\''+t.pid+'\',\''+t.id+'\')"><span>'+esc(t.name)+' <small class="small">· '+esc(t.pname)+'</small></span><small class="small">'+esc(t.date||'')+'</small></div>').join(''):'<div class="empty"><h2>Nothing on the board.</h2><p class="small">Create a project, then add tasks from the Tasks area or inside a project.</p></div>';
+document.getElementById('scheduleList').innerHTML=all.filter(t=>t.date&&!t.done).sort((a,b)=>a.date.localeCompare(b.date)).map(t=>'<div class="task"><span><strong>'+esc(t.date)+'</strong> — '+esc(t.name)+' <small class="small">· '+esc(t.pname)+'</small></span></div>').join('')||'<div class="empty"><p class="small">No dated tasks yet.</p></div>';
+}
+render();
+</script>
+</body></html>
